@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4">
+  <h4 class="mb-3">{{ title }}</h4>
+  <form method="post">
+    {% if register %}
+    <div class="mb-3">
+      <label class="form-label">Никнейм</label>
+      <input name="username" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input name="email" type="email" class="form-control" required>
+    </div>
+    {% else %}
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input name="email" type="email" class="form-control" required>
+    </div>
+    {% endif %}
+    <div class="mb-3">
+      <label class="form-label">Пароль</label>
+      <input name="password" type="password" class="form-control" required>
+    </div>
+    <button class="btn btn-primary">{{ btn }}</button>
+  </form>
+</div>
+{% endblock %}
