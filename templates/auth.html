@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Вход — Bachata Music{% endblock %}
+{% block content %}
+  <div class="card">
+    <h2>Вход / Регистрация</h2>
+    <form method="post" class="grid2 mt">
+      <input name="username" placeholder="Имя (латиницей)" required />
+      <input name="password" type="password" placeholder="Пароль" required />
+      <button name="action" value="login" class="btn">Войти</button>
+      <button name="action" value="signup" class="btn primary">Создать аккаунт</button>
+    </form>
+    {% with msgs = get_flashed_messages() %}
+      {% if msgs %}<div class="flash">{{ msgs[0] }}</div>{% endif %}
+    {% endwith %}
+  </div>
+{% endblock %}
