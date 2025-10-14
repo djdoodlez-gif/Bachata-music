@@ -1,1 +1,1 @@
-from app import app  # не трогаем, просто экспорт из app.py
+from app import app  # просто импортируем app из app.py, без app.run()
