@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Лента — Bachata Music{% endblock %}
+{% block content %}
+  <div class="composer card">
+    {% if current_user.is_authenticated %}
+      <div class="row center-v">
+        <div class="avatar">{{ current_user.username[:1]|upper }}</div>
+        <input class="input" placeholder="Поделитесь любимым треком… (демо)" />
+        <button class="btn">Опубликовать</button>
+      </div>
+    {% else %}
+      <a class="btn" href="{{ url_for('auth') }}">Войти, чтобы постить</a>
+    {% endif %}
+  </div>
+
+  {% for t in tracks %}
+  <article class="post card">
+    <div class="row between center-v">
+      <div class="row center-v">
+        <div class="avatar">B</div>
+        <div>
+          <div class="author">Bachata Music</div>
+          <div class="muted small">новый трек</div>
+        </div>
+      </div>
+      <button class="icon">⋯</button>
+    </div>
+    <h3 class="mt">{{ t.title }}</h3>
+    <a class="btn primary" target="_blank" rel="noopener" href="{{ t.url }}">Слушать</a>
+  </article>
+  {% endfor %}
+{% endblock %}
