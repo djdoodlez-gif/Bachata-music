@@ -1,14 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Лента</h2>
-{% if posts %}
+
+<form method="post" class="card">
+  <textarea name="text" rows="3" placeholder="Что нового?" required></textarea>
+  <button type="submit">Опубликовать</button>
+</form>
+
+<ul class="feed">
   {% for p in posts %}
-    <article class="post">
-      <header>@{{ p.author }} · {{ p.created_at }}</header>
-      <p>{{ p.text }}</p>
-    </article>
+    <li class="post">
+      <div class="meta">
+        <b>@{{ p.username }}</b>
+        <span>• {{ p.created_at }}</span>
+      </div>
+      <div class="text">{{ p.text }}</div>
+    </li>
+  {% else %}
+    <li>Постов пока нет.</li>
   {% endfor %}
-{% else %}
-  <p>Пока пусто. Добавим посты на следующем шаге.</p>
-{% endif %}
+</ul>
 {% endblock %}
