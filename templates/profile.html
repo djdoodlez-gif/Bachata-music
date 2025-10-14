@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>@{{ user.username }}</h2>
-<p>Email: {{ user.email }}</p>
-<p>Роль: {{ user.role }}</p>
+<h2>Мой профиль</h2>
+<p><b>Логин:</b> @{{ user.username }}</p>
+
+<h3>Мои посты</h3>
+<ul class="feed">
+  {% for p in posts %}
+    <li class="post">
+      <div class="meta"><span>{{ p.created_at }}</span></div>
+      <div class="text">{{ p.text }}</div>
+    </li>
+  {% else %}
+    <li>Пока ничего не публиковал.</li>
+  {% endfor %}
+</ul>
 {% endblock %}
