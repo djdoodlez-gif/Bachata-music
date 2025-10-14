@@ -1,28 +1,16 @@
 {% extends "base.html" %}
+{% block title %}Вход — Bachata Music{% endblock %}
 {% block content %}
-<div class="card p-4">
-  <h4 class="mb-3">{{ title }}</h4>
-  <form method="post">
-    {% if register %}
-    <div class="mb-3">
-      <label class="form-label">Никнейм</label>
-      <input name="username" class="form-control" required>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Email</label>
-      <input name="email" type="email" class="form-control" required>
-    </div>
-    {% else %}
-    <div class="mb-3">
-      <label class="form-label">Email</label>
-      <input name="email" type="email" class="form-control" required>
-    </div>
-    {% endif %}
-    <div class="mb-3">
-      <label class="form-label">Пароль</label>
-      <input name="password" type="password" class="form-control" required>
-    </div>
-    <button class="btn btn-primary">{{ btn }}</button>
-  </form>
-</div>
+  <div class="card">
+    <h2>Вход / Регистрация</h2>
+    <form method="post" class="grid2 mt">
+      <input name="username" placeholder="Имя (латиницей)" required />
+      <input name="password" type="password" placeholder="Пароль" required />
+      <button name="action" value="login" class="btn">Войти</button>
+      <button name="action" value="signup" class="btn primary">Создать аккаунт</button>
+    </form>
+    {% with msgs = get_flashed_messages() %}
+      {% if msgs %}<div class="flash">{{ msgs[0] }}</div>{% endif %}
+    {% endwith %}
+  </div>
 {% endblock %}
