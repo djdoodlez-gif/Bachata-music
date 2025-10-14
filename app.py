@@ -2,13 +2,14 @@ import os, sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, flash, g
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# ---------- базовая настройка ----------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH  = os.path.join(BASE_DIR, "data.sqlite3")  # база рядом с app.py
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-me")
 
-# ---------- DB helpers ----------
+# ---------- helpers ----------
 def get_db():
     if "db" not in g:
         g.db = sqlite3.connect(DB_PATH)
@@ -42,9 +43,16 @@ def init_db():
     db.commit()
 
 # ---------- routes ----------
-@app.route("/")
+@app.route("/", methods=["GET", "HEAD"])
 def index():
+    # Render делает HEAD-запросы — просто отвечаем 200
+    if request.method == "HEAD":
+        return "", 200
     return render_template("index.html", title="Bachatagram")
+
+@app.route("/health")
+def health():
+    return "ok", 200
 
 @app.route("/auth/login", methods=["GET","POST"])
 def login():
