@@ -7,25 +7,28 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<header class="topbar">
-  <a class="logo" href="{{ url_for('index') }}">Bachatagram</a>
-  <nav>
-    {% if current_user.is_authenticated %}
-      <a href="{{ url_for('feed') }}">Лента</a>
-      <a href="{{ url_for('profile') }}">Профиль</a>
-      <a href="{{ url_for('auth.logout') }}">Выйти</a>
-    {% else %}
-      <a href="{{ url_for('auth.login') }}">Войти</a>
-    {% endif %}
-  </nav>
-</header>
-<main class="container">
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="flash">{% for m in messages %}<p>{{ m }}</p>{% endfor %}</div>
-    {% endif %}
-  {% endwith %}
-  {% block content %}{% endblock %}
-</main>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">Bachatagram</a>
+    <nav>
+      {% if session.get('uid') %}
+        <a href="{{ url_for('feed') }}">Лента</a>
+        <a href="{{ url_for('profile') }}">Профиль</a>
+        <a href="{{ url_for('logout') }}">Выйти</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Войти</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with msgs = get_flashed_messages() %}
+      {% if msgs %}
+        <ul class="flash">
+          {% for m in msgs %}<li>{{ m }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>
