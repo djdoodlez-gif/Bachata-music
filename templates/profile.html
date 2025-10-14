@@ -1,15 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Профиль — Bachata Music{% endblock %}
 {% block content %}
-  <div class="card">
-    <div class="row center-v">
-      <div class="avatar xl">{{ u.username[:1]|upper }}</div>
-      <div class="ml">
-        <h2>@{{ u.username }}</h2>
-        <div class="muted">На Bachata Music</div>
-      </div>
+<div class="card">
+  <div class="row center-v">
+    <div class="avatar xl">{{ name[:1]|upper }}</div>
+    <div class="ml">
+      <h2>@{{ name }}</h2>
+      <div class="muted">Bachatagram member</div>
     </div>
-    <hr>
-    <p class="muted small">Здесь будет список плейлистов и публикаций пользователя (демо).</p>
   </div>
+  <hr>
+  <p class="muted small">Здесь будут посты и плейлисты пользователя.</p>
+</div>
 {% endblock %}
