@@ -1,33 +1,31 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>{{ title or "Bachatagram" }}</title>
-  <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ title or 'Bachatagram' }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
 <header class="topbar">
-  <div class="container row between center-v">
-    <a class="brand" href="{{ url_for('home') }}">Bachatagram</a>
-    <nav class="nav row">
+  <a class="logo" href="{{ url_for('index') }}">Bachatagram</a>
+  <nav>
+    {% if current_user.is_authenticated %}
       <a href="{{ url_for('feed') }}">Лента</a>
-      <a href="{{ url_for('auth') }}">Войти</a>
-    </nav>
-  </div>
+      <a href="{{ url_for('profile') }}">Профиль</a>
+      <a href="{{ url_for('auth.logout') }}">Выйти</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}">Войти</a>
+    {% endif %}
+  </nav>
 </header>
-
-<main class="container page">
+<main class="container">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash">{% for m in messages %}<p>{{ m }}</p>{% endfor %}</div>
+    {% endif %}
+  {% endwith %}
   {% block content %}{% endblock %}
 </main>
-
-<footer class="footer">
-  <div class="container">
-    © {{ 2025 }} Bachatagram — Bachata community
-  </div>
-</footer>
 </body>
 </html>
