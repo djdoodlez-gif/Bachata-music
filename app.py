@@ -1,23 +1,19 @@
 import os
-from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, flash, g
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
-# -------------------- конфиг --------------------
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-me")
 
-# DATABASE_URL берём из Render PostgreSQL (или локально SQLite для разработки)
+# База: обязательно проверь, что в Render задана переменная окружения DATABASE_URL (Internal Database URL)
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///local.sqlite3")
-# Render иногда отдаёт postgres:// — SQLAlchemy тоже понимает, оставляем как есть.
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
 
-# -------------------- БД утилиты --------------------
+# ---------- DB ----------
 def init_db():
-    """Создаёт таблицы, если их нет."""
     schema_sql = """
     CREATE TABLE IF NOT EXISTS users(
       id SERIAL PRIMARY KEY,
@@ -39,8 +35,10 @@ def init_db():
 
 def get_user_by_id(uid: int):
     with engine.begin() as conn:
-        row = conn.execute(text("SELECT id, username FROM users WHERE id=:i"), {"i": uid}).mappings().first()
-        return row
+        return conn.execute(
+            text("SELECT id, username FROM users WHERE id=:i"),
+            {"i": uid}
+        ).mappings().first()
 
 @app.before_request
 def load_current_user():
@@ -49,7 +47,7 @@ def load_current_user():
     if uid:
         g.user = get_user_by_id(uid)
 
-# -------------------- маршруты --------------------
+# ---------- ROUTES ----------
 @app.get("/")
 def index():
     return render_template("index.html", title="Bachatagram")
@@ -62,13 +60,21 @@ def login():
         if not username or not password:
             flash("Заполни логин и пароль")
             return redirect(url_for("login"))
+
+        # логин регистрозависимый, при желании можно привести к lower()
         with engine.begin() as conn:
-            user = conn.execute(text("SELECT id, username, passhash FROM users WHERE username=:u"),
-                                {"u": username}).mappings().first()
+            user = conn.execute(
+                text("SELECT id, username, passhash FROM users WHERE username=:u"),
+                {"u": username}
+            ).mappings().first()
+
         if user and check_password_hash(user["passhash"], password):
             session["uid"] = user["id"]
             return redirect(url_for("feed"))
+
         flash("Неверный логин или пароль")
+        return redirect(url_for("login"))
+
     return render_template("auth.html", title="Вход / Регистрация")
 
 @app.post("/auth/register")
@@ -78,14 +84,21 @@ def register():
     if not username or not password:
         flash("Заполни логин и пароль")
         return redirect(url_for("login"))
+
     try:
+        # создаём пользователя и СРАЗУ логиним (берём id через RETURNING)
         with engine.begin() as conn:
-            conn.execute(text(
-                "INSERT INTO users(username, passhash) VALUES(:u, :p)"
-            ), {"u": username, "p": generate_password_hash(password)})
-        flash("Готово! Теперь войди.")
+            row = conn.execute(
+                text("INSERT INTO users(username, passhash) VALUES(:u,:p) RETURNING id"),
+                {"u": username, "p": generate_password_hash(password)}
+            ).first()
+            new_id = row[0] if row else None
+        if new_id:
+            session["uid"] = new_id
+            return redirect(url_for("feed"))
+        else:
+            flash("Не удалось создать пользователя")
     except Exception:
-        # дубликат логина/ошибка
         flash("Такой логин уже есть")
     return redirect(url_for("login"))
 
@@ -93,13 +106,15 @@ def register():
 def feed():
     if not g.user:
         return redirect(url_for("login"))
+
     if request.method == "POST":
         text_val = request.form.get("text","").strip()
         if text_val:
             with engine.begin() as conn:
-                conn.execute(text(
-                    "INSERT INTO posts(user_id, text) VALUES(:uid, :t)"
-                ), {"uid": g.user["id"], "t": text_val})
+                conn.execute(
+                    text("INSERT INTO posts(user_id, text) VALUES(:uid, :t)"),
+                    {"uid": g.user["id"], "t": text_val}
+                )
         return redirect(url_for("feed"))
 
     with engine.begin() as conn:
@@ -108,17 +123,18 @@ def feed():
             FROM posts p JOIN users u ON u.id = p.user_id
             ORDER BY p.id DESC
         """)).mappings().all()
+
     return render_template("feed.html", title="Лента — Bachatagram", posts=rows, user=g.user)
 
 @app.get("/me")
 def me():
-    if not g.user: 
+    if not g.user:
         return redirect(url_for("login"))
     with engine.begin() as conn:
-        my_posts = conn.execute(text("""
-            SELECT id, text, created_at FROM posts
-            WHERE user_id=:uid ORDER BY id DESC
-        """), {"uid": g.user["id"]}).mappings().all()
+        my_posts = conn.execute(
+            text("SELECT id, text, created_at FROM posts WHERE user_id=:uid ORDER BY id DESC"),
+            {"uid": g.user["id"]}
+        ).mappings().all()
     return render_template("profile.html", title="Мой профиль", user=g.user, posts=my_posts)
 
 @app.get("/logout")
@@ -135,17 +151,15 @@ def health():
     except Exception as e:
         return f"db error: {e}", 500
 
-# -------------------- запуск / инициализация --------------------
+# ---------- bootstrap ----------
 def _ensure_db():
     try:
         init_db()
     except (ProgrammingError, OperationalError):
-        # при холодном старте подождём, если БД ещё поднимается
         pass
 
 _ensure_db()
 
 if __name__ == "__main__":
-    # локальный запуск (dev)
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
