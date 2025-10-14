@@ -1,49 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="layout">
-  <aside class="aside card hide-sm">
-    <h4>Навигация</h4>
-    <ul class="menu">
-      <li><a href="{{ url_for('feed') }}">Лента</a></li>
-      <li><a href="#">Плейлисты</a></li>
-      <li><a href="#">События</a></li>
-      <li><a href="#">Сообщество</a></li>
-    </ul>
-  </aside>
-
-  <section class="center">
-    <div class="composer card">
-      <input class="input" placeholder="Поделитесь мыслью или ссылкой на трек…">
-      <button class="btn primary">Опубликовать</button>
-    </div>
-
-    {% for p in posts %}
-    <article class="post card">
-      <div class="row between center-v">
-        <div class="row center-v">
-          <div class="avatar">{{ p.user[:1]|upper }}</div>
-          <div class="muted small">@{{ p.user }}</div>
-        </div>
-        <button class="icon">⋯</button>
-      </div>
-      <p class="mt">{{ p.text }}</p>
-      {% if p.img %}<img class="post-img" src="{{ p.img }}" alt="post">{% endif %}
-      <div class="row gap mt">
-        <button class="btn">❤️ 24</button>
-        <button class="btn">💬 3</button>
-        <button class="btn">↗️ Поделиться</button>
-      </div>
+<h2>Лента</h2>
+{% if posts %}
+  {% for p in posts %}
+    <article class="post">
+      <header>@{{ p.author }} · {{ p.created_at }}</header>
+      <p>{{ p.text }}</p>
     </article>
-    {% endfor %}
-  </section>
-
-  <aside class="aside card hide-sm">
-    <h4>Тренды</h4>
-    <ul class="muted small">
-      <li>#bachata</li>
-      <li>#remix</li>
-      <li>#openair</li>
-    </ul>
-  </aside>
-</div>
+  {% endfor %}
+{% else %}
+  <p>Пока пусто. Добавим посты на следующем шаге.</p>
+{% endif %}
 {% endblock %}
