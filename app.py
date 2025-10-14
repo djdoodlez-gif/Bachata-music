@@ -163,3 +163,27 @@ _ensure_db()
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+    from sqlalchemy import text
+
+@app.get("/_diag")
+def diag():
+    # 1) Сессия
+    uid = session.get("uid")
+
+    # 2) Подключение к БД
+    db_ok = True
+    users_cnt = None
+    try:
+        with engine.begin() as conn:
+            users_cnt = conn.execute(text("SELECT COUNT(*) FROM users")).scalar()
+    except Exception as e:
+        db_ok = False
+        users_cnt = f"DB ERROR: {e}"
+
+    # 3) Итог
+    return {
+        "session_uid": uid,
+        "db_ok": db_ok,
+        "users_count": users_cnt,
+        "database_url_set": bool(os.environ.get("DATABASE_URL")),
+    }, 200
