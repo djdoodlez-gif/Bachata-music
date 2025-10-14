@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH  = os.path.join(BASE_DIR, "data.sqlite3")
+DB_PATH  = os.path.join(BASE_DIR, "data.sqlite3")  # база рядом с app.py
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-me")
@@ -22,6 +22,7 @@ def close_db(exc):
         db.close()
 
 def init_db():
+    """Создаём таблицы, если их ещё нет"""
     sql = """
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,13 +40,6 @@ def init_db():
     db = get_db()
     db.executescript(sql)
     db.commit()
-
-# ---------- helpers ----------
-def current_user():
-    if "uid" not in session:
-        return None
-    db = get_db()
-    return db.execute("SELECT * FROM users WHERE id = ?", (session["uid"],)).fetchone()
 
 # ---------- routes ----------
 @app.route("/")
@@ -84,6 +78,12 @@ def register():
         flash("Такой логин уже есть")
     return redirect(url_for("login"))
 
+def current_user():
+    if "uid" not in session:
+        return None
+    db = get_db()
+    return db.execute("SELECT * FROM users WHERE id = ?", (session["uid"],)).fetchone()
+
 @app.route("/feed", methods=["GET","POST"])
 def feed():
     user = current_user()
@@ -121,13 +121,13 @@ def logout():
     return redirect(url_for("index"))
 
 # ---------- bootstrap ----------
-def bootstrap():
+if __name__ == "__main__":
+    # При локальном запуске (python app.py)
     with app.app_context():
         init_db()
-
-if __name__ == "__main__":
-    bootstrap()
     port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=True)
 else:
-    bootstrap()
+    # При запуске через gunicorn на Render
+    with app.app_context():
+        init_db()
