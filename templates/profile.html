@@ -1,14 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <div class="row center-v">
-    <div class="avatar xl">{{ name[:1]|upper }}</div>
-    <div class="ml">
-      <h2>@{{ name }}</h2>
-      <div class="muted">Bachatagram member</div>
-    </div>
-  </div>
-  <hr>
-  <p class="muted small">Здесь будут посты и плейлисты пользователя.</p>
-</div>
+<h2>@{{ user.username }}</h2>
+<p>Email: {{ user.email }}</p>
+<p>Роль: {{ user.role }}</p>
 {% endblock %}
