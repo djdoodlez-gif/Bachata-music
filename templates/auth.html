@@ -1,18 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Войти</h2>
-<form method="post" action="{{ url_for('auth.login') }}">
+<h2>Вход</h2>
+<form method="post" action="{{ url_for('login') }}" class="card">
   <input name="username" placeholder="Логин" required>
   <input type="password" name="password" placeholder="Пароль" required>
   <button type="submit">Войти</button>
 </form>
 
-<hr>
-
-<h2 id="signup">Регистрация</h2>
-<form method="post" action="{{ url_for('auth.register') }}">
+<h2>Регистрация</h2>
+<form method="post" action="{{ url_for('register') }}" class="card">
   <input name="username" placeholder="Логин" required>
-  <input type="email" name="email" placeholder="Email" required>
   <input type="password" name="password" placeholder="Пароль" required>
   <button type="submit">Создать аккаунт</button>
 </form>
