@@ -9,11 +9,14 @@
 <body>
 <header class="topbar">
   <div class="container">
-    <strong>Bachatagram</strong>
+    <strong><a href="{{ url_for('index') }}">Bachatagram</a></strong>
     <nav>
       {% if g.user %}
         <a href="{{ url_for('feed') }}">Лента</a>
         <a href="{{ url_for('me') }}">Профиль</a>
+        {% if g.user.is_admin %}
+          <a href="{{ url_for('admin_panel') }}">Админ</a>
+        {% endif %}
         <a href="{{ url_for('logout') }}">Выйти</a>
       {% else %}
         <a href="{{ url_for('login') }}">Войти</a>

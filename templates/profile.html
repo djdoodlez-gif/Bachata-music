@@ -2,6 +2,9 @@
 {% block content %}
 <h2>Мой профиль</h2>
 <p><b>Логин:</b> @{{ user.username }}</p>
+<p><b>Имя:</b> {{ user.display_name }}</p>
+<p><b>E-mail:</b> {{ user.email }}</p>
+{% if user.is_admin %}<p><b>Роль:</b> администратор</p>{% endif %}
 
 <h3>Мои посты</h3>
 <ul class="feed">
