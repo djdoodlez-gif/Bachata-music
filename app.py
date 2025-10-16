@@ -1,79 +1,77 @@
 import os
+import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, flash, g
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
 
-def _sa_url():
-    raw = os.getenv("DATABASE_URL", "")
-    if not raw:
-        return "sqlite:///data.sqlite3"
-    if raw.startswith("postgres://"):
-        raw = raw.replace("postgres://", "postgresql+psycopg://", 1)
-    elif raw.startswith("postgresql://"):
-        raw = raw.replace("postgresql://", "postgresql+psycopg://", 1)
-    return raw
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "data.sqlite3")
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-me")
-app.config["SQLALCHEMY_DATABASE_URI"] = _sa_url()
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = SQLAlchemy(app)
+# ----------------- DB helpers -----------------
+def get_db():
+    if "db" not in g:
+        g.db = sqlite3.connect(DB_PATH)
+        g.db.row_factory = sqlite3.Row
+    return g.db
 
-class User(db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(255))
-    display_name = db.Column(db.String(120))
-    passhash = db.Column(db.String(255), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False, nullable=False)
+@app.teardown_appcontext
+def close_db(exc):
+    db = g.pop("db", None)
+    if db:
+        db.close()
 
-class Post(db.Model):
-    __tablename__ = "posts"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.ForeignKey("users.id"), nullable=False)
-    text = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=func.now())
-    user = db.relationship(User, backref="posts")
+def init_db():
+    db = get_db()
+    db.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS users(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT,
+            display_name TEXT,
+            passhash TEXT NOT NULL,
+            is_admin INTEGER DEFAULT 0
+        );
+        CREATE TABLE IF NOT EXISTS posts(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            text TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+        """
+    )
+    # seed admin if not exists
+    if not db.execute("SELECT 1 FROM users WHERE username = 'admin'").fetchone():
+        db.execute(
+            "INSERT INTO users(username,email,display_name,passhash,is_admin) VALUES (?,?,?,?,1)",
+            ("admin", "admin@example.com", "Administrator", generate_password_hash("admin12345"))
+        )
+        db.commit()
 
-@app.before_request
-def _load_user():
-    g.user = None
-    uid = session.get("uid")
-    if uid:
-        g.user = db.session.get(User, uid)
+# ----------------- helpers -----------------
+def current_user():
+    if "uid" not in session:
+        return None
+    db = get_db()
+    return db.execute("SELECT * FROM users WHERE id = ?", (session["uid"],)).fetchone()
 
-def ensure_db():
-    with app.app_context():
-        db.create_all()
-        admin_login = os.getenv("ADMIN_USERNAME")
-        admin_pass = os.getenv("ADMIN_PASSWORD")
-        admin_email = os.getenv("ADMIN_EMAIL", None)
-        if admin_login and admin_pass:
-            u = User.query.filter_by(username=admin_login).first()
-            if not u:
-                u = User(username=admin_login,
-                         display_name=os.getenv("ADMIN_DISPLAY","Admin"),
-                         email=admin_email,
-                         passhash=generate_password_hash(admin_pass),
-                         is_admin=True)
-                db.session.add(u)
-                db.session.commit()
-
+# ----------------- routes -----------------
 @app.route("/")
 def index():
     return render_template("index.html", title="Bachatagram")
 
-@app.route("/auth/login", methods=["GET", "POST"])
+@app.route("/auth/login", methods=["GET","POST"])
 def login():
     if request.method == "POST":
         username = request.form.get("username","").strip()
         password = request.form.get("password","")
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.passhash, password):
-            session["uid"] = user.id
+        db = get_db()
+        user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        if user and check_password_hash(user["passhash"], password):
+            session["uid"] = user["id"]
             return redirect(url_for("feed"))
         flash("Неверный логин или пароль")
     return render_template("auth.html", title="Вход / Регистрация")
@@ -81,49 +79,62 @@ def login():
 @app.route("/auth/register", methods=["POST"])
 def register():
     username = request.form.get("username","").strip()
-    email = request.form.get("email","").strip() or None
-    display_name = request.form.get("display_name","").strip() or None
+    email = request.form.get("email","").strip()
+    display_name = request.form.get("display_name","").strip() or username
     password = request.form.get("password","")
     if not username or not password:
-        flash("Заполни логин и пароль")
+        flash("Логин и пароль обязательны")
         return redirect(url_for("login"))
-    if User.query.filter_by(username=username).first():
-        flash("Такой логин уже есть")
-        return redirect(url_for("login"))
-    u = User(username=username, email=email, display_name=display_name,
-             passhash=generate_password_hash(password))
-    db.session.add(u)
-    db.session.commit()
-    flash("Готово! Теперь войдите.")
+    try:
+        db = get_db()
+        db.execute(
+            "INSERT INTO users(username,email,display_name,passhash) VALUES (?,?,?,?)",
+            (username, email, display_name, generate_password_hash(password))
+        )
+        db.commit()
+        flash("Регистрация успешна! Войдите ниже.")
+    except sqlite3.IntegrityError:
+        flash("Пользователь с таким логином уже существует.")
     return redirect(url_for("login"))
 
 @app.route("/feed", methods=["GET","POST"])
 def feed():
-    if not g.user:
+    user = current_user()
+    if not user:
         return redirect(url_for("login"))
+    db = get_db()
     if request.method == "POST":
-        text = request.form.get("text","").strip()
+        text = (request.form.get("text") or "").strip()
         if text:
-            db.session.add(Post(user_id=g.user.id, text=text))
-            db.session.commit()
+            db.execute("INSERT INTO posts(user_id, text) VALUES (?,?)", (user["id"], text))
+            db.commit()
         return redirect(url_for("feed"))
-    posts = Post.query.order_by(Post.id.desc()).all()
-    return render_template("feed.html", title="Лента", posts=posts)
+    posts = db.execute(
+        """SELECT p.id, p.text, p.created_at, u.display_name, u.username
+           FROM posts p JOIN users u ON u.id = p.user_id
+           ORDER BY p.id DESC"""
+    ).fetchall()
+    return render_template("feed.html", title="Лента — Bachatagram", posts=posts, user=user)
 
 @app.route("/me")
 def profile():
-    if not g.user:
+    user = current_user()
+    if not user:
         return redirect(url_for("login"))
-    posts = Post.query.filter_by(user_id=g.user.id).order_by(Post.id.desc()).all()
-    return render_template("profile.html", title="Мой профиль", user=g.user, posts=posts)
+    db = get_db()
+    my_posts = db.execute("SELECT id, text, created_at FROM posts WHERE user_id = ? ORDER BY id DESC", (user["id"],)).fetchall()
+    return render_template("profile.html", title="Мой профиль", user=user, posts=my_posts)
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("index"))
 
-ensure_db()
+# ----------------- bootstrap -----------------
+# Инициализируем БД при импорте (важно для gunicorn на Render)
+with app.app_context():
+    init_db()
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", "5000"))
+    port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)

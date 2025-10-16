@@ -1,18 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Лента</h1>
+<div class="card">
+  <form method="post">
+    <p><textarea name="text" rows="3" placeholder="Напишите что-нибудь..."></textarea></p>
+    <p><button>Опубликовать</button></p>
+  </form>
+</div>
+{% for p in posts %}
   <div class="card">
-    <form method="post">
-      <textarea name="text" rows="3" placeholder="Поделись новостью..." required></textarea>
-      <div style="margin-top:10px"><button>Опубликовать</button></div>
-    </form>
+    <div style="font-weight:600">{{ p.display_name or p.username }}</div>
+    <div style="opacity:.75;font-size:.9em">{{ p.created_at }}</div>
+    <p style="white-space:pre-wrap">{{ p.text }}</p>
   </div>
-  {% for p in posts %}
-    <div class="card">
-      <div><strong>@{{ p.user.username }}</strong> — <span class="muted">{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</span></div>
-      <p>{{ p.text }}</p>
-    </div>
-  {% else %}
-    <p class="muted">Постов пока нет.</p>
-  {% endfor %}
+{% endfor %}
 {% endblock %}
