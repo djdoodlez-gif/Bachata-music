@@ -1,23 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Лента</h2>
-
-<form method="post" class="card">
-  <textarea name="text" rows="3" placeholder="Что нового?" required></textarea>
-  <button type="submit">Опубликовать</button>
-</form>
-
-<ul class="feed">
+  <h1>Лента</h1>
+  <div class="card">
+    <form method="post">
+      <textarea name="text" rows="3" placeholder="Поделись новостью..." required></textarea>
+      <div style="margin-top:10px"><button>Опубликовать</button></div>
+    </form>
+  </div>
   {% for p in posts %}
-    <li class="post">
-      <div class="meta">
-        <b>@{{ p.username }}</b>
-        <span>• {{ p.created_at }}</span>
-      </div>
-      <div class="text">{{ p.text }}</div>
-    </li>
+    <div class="card">
+      <div><strong>@{{ p.user.username }}</strong> — <span class="muted">{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</span></div>
+      <p>{{ p.text }}</p>
+    </div>
   {% else %}
-    <li>Постов пока нет.</li>
+    <p class="muted">Постов пока нет.</p>
   {% endfor %}
-</ul>
 {% endblock %}

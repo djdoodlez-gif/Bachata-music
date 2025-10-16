@@ -1,20 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Мой профиль</h2>
-<p><b>Логин:</b> @{{ user.username }}</p>
-<p><b>Имя:</b> {{ user.display_name }}</p>
-<p><b>E-mail:</b> {{ user.email }}</p>
-{% if user.is_admin %}<p><b>Роль:</b> администратор</p>{% endif %}
-
-<h3>Мои посты</h3>
-<ul class="feed">
+  <h1>Профиль</h1>
+  <div class="card">
+    <p><strong>Логин:</strong> {{ user.username }}</p>
+    <p><strong>Имя:</strong> {{ user.display_name or "—" }}</p>
+    <p><strong>E-mail:</strong> {{ user.email or "—" }}</p>
+    <p><strong>Статус:</strong> {{ "Админ" if user.is_admin else "Пользователь" }}</p>
+  </div>
+  <h2>Мои посты</h2>
   {% for p in posts %}
-    <li class="post">
-      <div class="meta"><span>{{ p.created_at }}</span></div>
-      <div class="text">{{ p.text }}</div>
-    </li>
+    <div class="card">
+      <div class="muted">{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+      <p>{{ p.text }}</p>
+    </div>
   {% else %}
-    <li>Пока ничего не публиковал.</li>
+    <p class="muted">Пока ничего.</p>
   {% endfor %}
-</ul>
 {% endblock %}

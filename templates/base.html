@@ -7,29 +7,23 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<header class="topbar">
-  <div class="container">
-    <strong><a href="{{ url_for('index') }}">Bachatagram</a></strong>
+  <header>
+    <div><strong>Bachatagram</strong></div>
     <nav>
       {% if g.user %}
-        <a href="{{ url_for('feed') }}">Лента</a>
-        <a href="{{ url_for('me') }}">Профиль</a>
-        {% if g.user.is_admin %}
-          <a href="{{ url_for('admin_panel') }}">Админ</a>
-        {% endif %}
+        <a href="{{ url_for('feed') }}">Лента</a> ·
+        <a href="{{ url_for('profile') }}">Профиль</a> ·
         <a href="{{ url_for('logout') }}">Выйти</a>
       {% else %}
         <a href="{{ url_for('login') }}">Войти</a>
       {% endif %}
     </nav>
+  </header>
+  <div class="wrap">
+    {% for m in get_flashed_messages() %}
+      <div class="flash">{{ m }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
   </div>
-</header>
-
-<main class="container">
-  {% for m in get_flashed_messages() %}
-    <div class="flash">{{ m }}</div>
-  {% endfor %}
-  {% block content %}{% endblock %}
-</main>
 </body>
 </html>

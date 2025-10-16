@@ -1,8 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Добро пожаловать в Bachatagram!</h1>
-  <p>Создай аккаунт и напиши свой первый пост в ленте.</p>
-  {% if not g.user %}
-    <p><a href="{{ url_for('login') }}">Войти / Зарегистрироваться</a></p>
-  {% endif %}
+  <h1>Добро пожаловать!</h1>
+  <p class="muted">Зарегистрируйся и загляни в ленту.</p>
 {% endblock %}
