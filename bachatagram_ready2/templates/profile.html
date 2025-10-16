@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Профиль</h1>
+  <div class="card">
+    <p><strong>Логин:</strong> {{ user.username }}</p>
+    <p><strong>Имя:</strong> {{ user.display_name or "—" }}</p>
+    <p><strong>E-mail:</strong> {{ user.email or "—" }}</p>
+    <p><strong>Статус:</strong> {{ "Админ" if user.is_admin else "Пользователь" }}</p>
+  </div>
+  <h2>Мои посты</h2>
+  {% for p in posts %}
+    <div class="card">
+      <div class="muted">{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+      <p>{{ p.text }}</p>
+    </div>
+  {% else %}
+    <p class="muted">Пока ничего.</p>
+  {% endfor %}
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+  <div class="card">
+    <h2>Вход</h2>
+    <form method="post" action="{{ url_for('login') }}">
+      <label>Логин</label>
+      <input name="username" required>
+      <label>Пароль</label>
+      <input type="password" name="password" required>
+      <div style="margin-top:10px"><button>Войти</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Регистрация</h2>
+    <form method="post" action="{{ url_for('register') }}">
+      <label>Логин</label>
+      <input name="username" required>
+      <label>E-mail</label>
+      <input type="email" name="email">
+      <label>Имя</label>
+      <input name="display_name">
+      <label>Пароль</label>
+      <input type="password" name="password" required>
+      <div style="margin-top:10px"><button>Создать аккаунт</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
