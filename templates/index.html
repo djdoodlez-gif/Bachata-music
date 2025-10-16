@@ -1,7 +1,11 @@
+
 {% extends "base.html" %}
 {% block content %}
-  <div class="card">
-    <h1>Добро пожаловать!</h1>
-    <p>Зарегистрируйся и загляни в ленту.</p>
+<section class="hero">
+  <h1>Добро пожаловать!</h1>
+  <p>Создай аккаунт, загружай фото и музыку, делай истории — как в инсте/ВК.</p>
+  <div class="cta">
+    <a class="btn" href="{{ url_for('login') }}">Войти / Регистрация</a>
   </div>
+</section>
 {% endblock %}

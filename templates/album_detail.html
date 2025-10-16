@@ -1,0 +1,14 @@
+
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ album.title }}</h2>
+<form class="card" method="post" enctype="multipart/form-data">
+  <label>Фото <input type="file" name="photo" accept="image/*" required></label>
+  <button class="btn">Загрузить</button>
+</form>
+<div class="grid">
+  {% for p in photos %}
+  <img class="photo" src="{{ p.path }}">
+  {% else %}<div class="muted">Фото пока нет</div>{% endfor %}
+</div>
+{% endblock %}

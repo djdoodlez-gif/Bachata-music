@@ -1,16 +1,31 @@
+
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <form method="post">
-    <p><textarea name="text" rows="3" placeholder="Напишите что-нибудь..."></textarea></p>
-    <p><button>Опубликовать</button></p>
-  </form>
-</div>
+<form class="card" method="post" enctype="multipart/form-data">
+  <h2>Новая запись</h2>
+  <textarea name="text" placeholder="Поделись новостями…" rows="3"></textarea>
+  <input type="file" name="media" accept="image/*,video/*,audio/*">
+  <button class="btn">Опубликовать</button>
+</form>
+
 {% for p in posts %}
-  <div class="card">
-    <div style="font-weight:600">{{ p.display_name or p.username }}</div>
-    <div style="opacity:.75;font-size:.9em">{{ p.created_at }}</div>
-    <p style="white-space:pre-wrap">{{ p.text }}</p>
-  </div>
+<article class="post card">
+  <header>
+    <a href="{{ url_for('profile', username=p.user.username) }}">{{ p.user.display_name or p.user.username }}</a>
+    <time>{{ p.created_at.strftime('%d.%m %H:%M') }}</time>
+  </header>
+  {% if p.text %}<p>{{ p.text }}</p>{% endif %}
+  {% if p.media_path %}
+    {% if p.media_type == 'image' %}
+      <img src="{{ p.media_path }}" alt="">
+    {% elif p.media_type == 'video' %}
+      <video controls preload="metadata" src="{{ p.media_path }}"></video>
+    {% elif p.media_type == 'audio' %}
+      <audio controls preload="metadata" src="{{ p.media_path }}"></audio>
+    {% endif %}
+  {% endif %}
+</article>
+{% else %}
+<p>Пока пусто. Напиши первый пост!</p>
 {% endfor %}
 {% endblock %}

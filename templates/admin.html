@@ -1,27 +1,18 @@
+
 {% extends "base.html" %}
 {% block content %}
-<h2>Админ-панель</h2>
-
-<form method="post" action="{{ url_for('make_admin') }}" class="card">
-  <label>Сделать админом пользователя (логин):</label>
-  <input name="username" placeholder="username" required>
-  <button type="submit">Повысить</button>
-</form>
-
-<h3>Пользователи</h3>
-<table class="table">
-  <thead><tr><th>ID</th><th>Логин</th><th>Имя</th><th>E-mail</th><th>Админ</th><th>Создан</th></tr></thead>
-  <tbody>
+<h2>Пользователи</h2>
+<table class="card table">
+  <tr><th>ID</th><th>Логин</th><th>Имя</th><th>Почта</th><th>Админ</th><th>Дата</th></tr>
   {% for u in users %}
-    <tr>
-      <td>{{ u.id }}</td>
-      <td>@{{ u.username }}</td>
-      <td>{{ u.display_name }}</td>
-      <td>{{ u.email }}</td>
-      <td>{{ '✓' if u.is_admin else '' }}</td>
-      <td>{{ u.created_at }}</td>
-    </tr>
+  <tr>
+    <td>{{ u.id }}</td>
+    <td>@{{ u.username }}</td>
+    <td>{{ u.display_name }}</td>
+    <td>{{ u.email }}</td>
+    <td>{{ "✓" if u.is_admin else "" }}</td>
+    <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+  </tr>
   {% endfor %}
-  </tbody>
 </table>
 {% endblock %}

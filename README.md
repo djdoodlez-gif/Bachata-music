@@ -1,80 +1,33 @@
-# Bachata Music — VK-style мини-соцсеть
 
-Мини-соцсеть для твоего сообщества: лента, профили, посты, лайки, комментарии.
-Стек: Flask + SQLite + Bootstrap.
+# Bachatagram+ (mini‑VK/Instagram style)
 
-## Быстрый запуск (локально или на сервере)
+Features:
+- Auth: login/registration (hashed passwords), sessions
+- Profiles: avatar, bio, display name editing
+- Feed: posts with text + photo/video/audio
+- Stories: 24h image/video
+- Albums & Photos
+- Music: upload audio, optional album bind
+- Light/Dark theme toggle (?theme=light / dark)
+- Minimal Admin page (USER list). Admin created from env vars.
+
+## Run locally
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+python -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
-flask --app app.py init-db
+export SECRET_KEY='dev'
+# optional Postgres: export DATABASE_URL='postgresql://...'
 python app.py
 ```
-Открой: http://127.0.0.1:5000
 
-## Прод на сервере (Gunicorn)
-```bash
-pip install gunicorn
-gunicorn -w 2 -b 0.0.0.0:5000 app:app
-```
+## Render
+Create Web Service from this repo.
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `gunicorn app:app`
+- **Env Vars**:
+  - `SECRET_KEY` — random string
+  - `DATABASE_URL` — your Render Postgres URL (or omit to use SQLite; note: uploads are ephemeral)
+  - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — to auto-create admin
+  - `RENDER` = `1` (enables /tmp uploads)
 
-## NGINX + HTTPS (пример)
-Поставь nginx и certbot:
-```bash
-sudo apt update && sudo apt install -y nginx certbot python3-certbot-nginx
-```
-
-Создай конфиг `/etc/nginx/sites-available/bachata`:
-```
-server {
-    server_name bachata-music.ru bachata-music.com;
-    client_max_body_size 16M;
-
-    location / {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Активируй и перезапусти:
-```bash
-sudo ln -s /etc/nginx/sites-available/bachata /etc/nginx/sites-enabled/bachata
-sudo nginx -t && sudo systemctl restart nginx
-```
-
-Выдай сертификаты:
-```bash
-sudo certbot --nginx -d bachata-music.ru -d www.bachata-music.ru -d bachata-music.com -d www.bachata-music.com
-```
-
-## systemd сервис (чтобы работало после перезагрузки)
-Файл `/etc/systemd/system/bachata.service`:
-```
-[Unit]
-Description=Bachata Music Flask App
-After=network.target
-
-[Service]
-User=www-data
-WorkingDirectory=/home/USERNAME/bachata_site
-Environment="SECRET_KEY=change-me"
-ExecStart=/home/USERNAME/bachata_site/venv/bin/gunicorn -w 2 -b 127.0.0.1:5000 app:app
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Затем:
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable bachata
-sudo systemctl start bachata
-```
-
-Готово! Дальше можно добавлять загрузку фото, подписки, роли админов и т.д.
+Uploads are stored in `/tmp/uploads` on Render (ephemeral). For persistence use S3 or a paid disk.

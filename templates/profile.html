@@ -1,14 +1,59 @@
+
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <h2>{{ user.display_name or user.username }}</h2>
-  <div style="opacity:.8">{{ user.email }}</div>
-</div>
-<div class="card"><h3>Мои посты</h3></div>
-{% for p in posts %}
-  <div class="card">
-    <div style="opacity:.75;font-size:.9em">{{ p.created_at }}</div>
-    <p style="white-space:pre-wrap">{{ p.text }}</p>
+<section class="profile card">
+  <img class="avatar" src="{{ user.avatar or url_for('static', filename='avatar_placeholder.png') }}" alt="">
+  <div>
+    <h2>{{ user.display_name or user.username }}</h2>
+    <div class="muted">@{{ user.username }}</div>
+    {% if user.bio %}<p>{{ user.bio }}</p>{% endif %}
+    {% if g.user and g.user.id == user.id %}
+      <a class="btn" href="{{ url_for('settings') }}">Редактировать</a>
+    {% endif %}
   </div>
-{% endfor %}
+</section>
+
+<h3>Истории</h3>
+<div class="stories">
+  {% for s in stories %}
+  <div class="story">
+    {% if s.media_type == 'image' %}
+      <img src="{{ s.media_path }}">
+    {% else %}
+      <video controls src="{{ s.media_path }}"></video>
+    {% endif %}
+  </div>
+  {% else %}<div class="muted">Нет активных историй</div>{% endfor %}
+</div>
+
+<h3>Музыка</h3>
+<div class="grid">
+  {% for t in tracks %}
+  <div class="card">
+    <strong>{{ t.title }}</strong>
+    <audio controls src="{{ t.path }}"></audio>
+  </div>
+  {% else %}<div class="muted">Нет треков</div>{% endfor %}
+</div>
+
+<h3>Альбомы</h3>
+<div class="grid">
+  {% for a in albums %}
+  <div class="card">
+    <a href="{{ url_for('album_detail', album_id=a.id) }}"><strong>{{ a.title }}</strong></a>
+    <div class="muted">{{ a.description }}</div>
+  </div>
+  {% else %}<div class="muted">Нет альбомов</div>{% endfor %}
+</div>
+
+<h3>Посты</h3>
+{% for p in posts %}
+  <article class="post card">
+    {% if p.media_path and p.media_type=='image' %}<img src="{{ p.media_path }}">{% endif %}
+    {% if p.media_path and p.media_type=='video' %}<video controls src="{{ p.media_path }}"></video>{% endif %}
+    {% if p.media_path and p.media_type=='audio' %}<audio controls src="{{ p.media_path }}"></audio>{% endif %}
+    {% if p.text %}<p>{{ p.text }}</p>{% endif %}
+    <time class="muted">{{ p.created_at.strftime('%d.%m %H:%M') }}</time>
+  </article>
+{% else %}<div class="muted">Постов нет</div>{% endfor %}
 {% endblock %}

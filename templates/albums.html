@@ -1,0 +1,21 @@
+
+{% extends "base.html" %}
+{% block content %}
+<form class="card" method="post">
+  <h2>Новый альбом</h2>
+  <label>Название <input name="title" required></label>
+  <label>Описание <input name="description"></label>
+  <button class="btn">Создать</button>
+</form>
+
+<div class="grid">
+{% for a in albums %}
+  <div class="card">
+    <a href="{{ url_for('album_detail', album_id=a.id) }}"><strong>{{ a.title }}</strong></a>
+    <div class="muted">{{ a.description }}</div>
+  </div>
+{% else %}
+  <div class="muted">Альбомов нет</div>
+{% endfor %}
+</div>
+{% endblock %}

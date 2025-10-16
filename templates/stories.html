@@ -1,0 +1,21 @@
+
+{% extends "base.html" %}
+{% block content %}
+<form class="card" method="post" enctype="multipart/form-data">
+  <h2>Новая история</h2>
+  <input type="file" name="media" accept="image/*,video/*" required>
+  <button class="btn">Опубликовать (24ч)</button>
+</form>
+
+<div class="stories">
+  {% for s in stories %}
+  <div class="story">
+    {% if s.media_type == 'image' %}
+      <img src="{{ s.media_path }}">
+    {% else %}
+      <video controls src="{{ s.media_path }}"></video>
+    {% endif %}
+  </div>
+  {% else %}<div class="muted">Историй нет</div>{% endfor %}
+</div>
+{% endblock %}

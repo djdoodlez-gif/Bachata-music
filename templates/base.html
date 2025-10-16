@@ -1,27 +1,42 @@
+
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="{{ theme }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ title or "Bachatagram" }}</title>
+  <title>{{ title or "Bachatagram+" }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-  <div class="nav">
-    <div style="font-weight:700">Bachatagram</div>
-    <div style="margin-left:auto;display:flex;gap:16px">
-      {% if session.get('uid') %}
-        <a href="{{ url_for('feed') }}">Лента</a>
-        <a href="{{ url_for('profile') }}">Профиль</a>
-        <a href="{{ url_for('logout') }}">Выйти</a>
-      {% else %}
-        <a href="{{ url_for('login') }}">Войти</a>
-      {% endif %}
-    </div>
-  </div>
-  <div class="container">
-    {% for m in get_flashed_messages() %}<div class="flash">{{ m }}</div>{% endfor %}
-    {% block content %}{% endblock %}
-  </div>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('feed') if g.user else url_for('index') }}">Bachatagram+</a>
+  <nav>
+    {% if g.user %}
+      <a href="{{ url_for('feed') }}">Лента</a>
+      <a href="{{ url_for('stories') }}">Истории</a>
+      <a href="{{ url_for('albums') }}">Альбомы</a>
+      <a href="{{ url_for('music') }}">Музыка</a>
+      <a href="{{ url_for('me') }}">Профиль</a>
+      {% if g.user.is_admin %}<a href="{{ url_for('admin') }}">Админ</a>{% endif %}
+      <a href="{{ url_for('logout') }}">Выйти</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Войти</a>
+    {% endif %}
+    <a class="theme" href="?theme={{ 'light' if theme=='dark' else 'dark' }}">{{ '☀️' if theme=='dark' else '🌙' }}</a>
+  </nav>
+</header>
+
+<main class="container">
+  {% with msgs = get_flashed_messages() %}
+    {% if msgs %}
+      <div class="flash">
+        {% for m in msgs %}<div class="msg">{{ m }}</div>{% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="foot">© {{ now.year }} Bachatagram+</footer>
 </body>
 </html>
