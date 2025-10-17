@@ -178,5 +178,17 @@ def _ensure():
     init_db()
 _ensure()
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+# ---------- bootstrap ----------
+def _ensure_init():
+    # запускаем инициализацию БД внутри application context
+    with app.app_context():
+        init_db()
+
+# при запуске через gunicorn (import app:app) — выполнится сразу
+_ensure_init()
+
+# при локальном запуске — тоже всё ок
+if name == "__main__":
+    _ensure_init()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
