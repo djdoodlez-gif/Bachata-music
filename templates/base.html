@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="ru" data-theme="{{ theme }}">
+<html lang="ru" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,35 +8,88 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<header class="topbar">
-  <a class="brand" href="{{ url_for('feed') if g.user else url_for('index') }}">Bachatagram+</a>
-  <nav>
-    {% if g.user %}
+  <header class="topbar">
+    <div class="brand">Bachatagram+</div>
+    <nav class="nav">
       <a href="{{ url_for('feed') }}">Лента</a>
-      <a href="{{ url_for('stories') }}">Истории</a>
-      <a href="{{ url_for('albums') }}">Альбомы</a>
       <a href="{{ url_for('music') }}">Музыка</a>
-      <a href="{{ url_for('me') }}">Профиль</a>
-      {% if g.user.is_admin %}<a href="{{ url_for('admin') }}">Админ</a>{% endif %}
-      <a href="{{ url_for('logout') }}">Выйти</a>
-    {% else %}
-      <a href="{{ url_for('login') }}">Войти</a>
-    {% endif %}
-    <a class="theme" href="?theme={{ 'light' if theme=='dark' else 'dark' }}">{{ '☀️' if theme=='dark' else '🌙' }}</a>
-  </nav>
-</header>
+      {% if g.user %}
+        <a href="{{ url_for('profile') }}">Профиль</a>
+        <a href="{{ url_for('logout') }}">Выйти</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Войти</a>
+      {% endif %}
+    </nav>
+    <button id="theme-toggle" class="ico">☾</button>
+  </header>
 
-<main class="container">
-  {% with msgs = get_flashed_messages() %}
-    {% if msgs %}
-      <div class="flash">
-        {% for m in msgs %}<div class="msg">{{ m }}</div>{% endfor %}
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash">
+          {% for cat, msg in messages %}
+            <div class="flash-item {{ cat }}">{{ msg|safe }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <div id="player-bar" class="player">
+    <div class="pl-left">
+      <img id="pl-cover" class="pl-cover" src="" alt="">
+      <div class="pl-meta">
+        <div id="pl-title" class="pl-title">Ничего не играет</div>
+        <div id="pl-artist" class="pl-artist muted">—</div>
       </div>
-    {% endif %}
-  {% endwith %}
-  {% block content %}{% endblock %}
-</main>
+    </div>
+    <div class="pl-center">
+      <div class="pl-controls">
+        <button id="btn-shuffle" class="ico-btn" title="Перемешать">
+          <svg viewBox="0 0 24 24"><path d="M4 4h3l13 13"/><path d="M4 20h3l4-4"/><path d="M15 4h5v5"/><path d="M20 20v-5h-5"/></svg>
+        </button>
+        <button id="btn-prev" class="ico-btn" title="Назад">
+          <svg viewBox="0 0 24 24"><path d="M11 12L21 5v14z"/><path d="M3 5v14"/></svg>
+        </button>
+        <button id="btn-play" class="ico-btn primary" title="Воспроизвести/Пауза">
+          <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 5h5v14H6zM13 5h5v14h-5z"/></svg>
+        </button>
+        <button id="btn-next" class="ico-btn" title="Вперёд">
+          <svg viewBox="0 0 24 24"><path d="M13 12L3 19V5z"/><path d="M21 5v14"/></svg>
+        </button>
+        <button id="btn-repeat" class="ico-btn" title="Повтор">
+          <svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+        </button>
+      </div>
+      <div class="pl-progress">
+        <div id="pl-current" class="time s">0:00</div>
+        <input id="pl-seek" class="seek" type="range" min="0" max="100" value="0" step="0.1">
+        <div id="pl-duration" class="time s">0:00</div>
+      </div>
+    </div>
+    <div class="pl-right">
+      <button id="btn-like" class="ico-btn" title="Лайк">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-.99-1.06a5.5 5.5 0 10-7.78 7.78L12 21.35l8.77-8.96a5.5 5.5 0 000-7.78z"/></svg>
+      </button>
+      <div class="vol">
+        <svg class="vol-ico" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+        <input id="pl-volume" type="range" min="0" max="1" step="0.01" value="1">
+      </div>
+    </div>
+    <audio id="pl-audio" preload="metadata"></audio>
+  </div>
 
-<footer class="foot">© {{ now.year }} Bachatagram+</footer>
+  <script>
+    document.getElementById('theme-toggle').onclick = () => {
+      const html = document.documentElement;
+      html.dataset.theme = (html.dataset.theme === 'light') ? 'dark' : 'light';
+      localStorage.setItem('theme', html.dataset.theme);
+    };
+    (function(){ const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; })();
+  </script>
+  <script src="{{ url_for('static', filename='player.js') }}"></script>
 </body>
 </html>

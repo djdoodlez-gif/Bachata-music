@@ -1,25 +1,12 @@
 
 {% extends "base.html" %}
 {% block content %}
-<form class="card" method="post" enctype="multipart/form-data">
-  <h2>Загрузить трек</h2>
-  <label>Название <input name="title" required></label>
-  <label>Альбом
-    <select name="album_id">
-      <option value="">— без альбома —</option>
-      {% for a in albums %}<option value="{{ a.id }}">{{ a.title }}</option>{% endfor %}
-    </select>
-  </label>
-  <label>Файл <input type="file" name="track" accept="audio/*" required></label>
-  <button class="btn">Загрузить</button>
-</form>
-
-<div class="grid">
-  {% for t in tracks %}
-  <div class="card">
-    <strong>{{ t.title }}</strong>
-    <audio controls src="{{ t.path }}"></audio>
+<section class="card p-20">
+  <h1 class="h1">Музыка</h1>
+  <p class="muted">Очередь и плеер снизу — как во ВК.</p>
+  <div class="toolbar mt-12">
+    <button id="btn-play-all" class="btn primary">Слушать всё</button>
   </div>
-  {% else %}<div class="muted">Нет треков</div>{% endfor %}
-</div>
+  <div id="tracks" class="tracks mt-16"></div>
+</section>
 {% endblock %}

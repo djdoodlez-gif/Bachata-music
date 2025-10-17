@@ -1,31 +1,41 @@
 
 {% extends "base.html" %}
 {% block content %}
-<form class="card" method="post" enctype="multipart/form-data">
-  <h2>Новая запись</h2>
-  <textarea name="text" placeholder="Поделись новостями…" rows="3"></textarea>
-  <input type="file" name="media" accept="image/*,video/*,audio/*">
-  <button class="btn">Опубликовать</button>
-</form>
+<section class="card p-20">
+  <h1 class="h1">Новая запись</h1>
+  <form method="post" enctype="multipart/form-data" class="form mt-12">
+    <textarea name="text" rows="3" placeholder="Поделись новостями…"></textarea>
+    <input type="file" name="media" class="mt-8">
+    <button class="btn primary mt-12">Опубликовать</button>
+  </form>
+</section>
 
-{% for p in posts %}
-<article class="post card">
-  <header>
-    <a href="{{ url_for('profile', username=p.user.username) }}">{{ p.user.display_name or p.user.username }}</a>
-    <time>{{ p.created_at.strftime('%d.%m %H:%M') }}</time>
-  </header>
-  {% if p.text %}<p>{{ p.text }}</p>{% endif %}
-  {% if p.media_path %}
-    {% if p.media_type == 'image' %}
-      <img src="{{ p.media_path }}" alt="">
-    {% elif p.media_type == 'video' %}
-      <video controls preload="metadata" src="{{ p.media_path }}"></video>
-    {% elif p.media_type == 'audio' %}
-      <audio controls preload="metadata" src="{{ p.media_path }}"></audio>
-    {% endif %}
-  {% endif %}
-</article>
-{% else %}
-<p>Пока пусто. Напиши первый пост!</p>
-{% endfor %}
+<section class="mt-16 feed">
+  {% for p in posts %}
+    <article class="card p-16">
+      <header class="post-h">
+        <div class="avatar">{{ p.display_name[:1] if p.display_name else p.username[:1] }}</div>
+        <div class="meta">
+          <div class="who">{{ p.display_name or p.username }}</div>
+          <div class="muted s">{{ p.created_at }}</div>
+        </div>
+      </header>
+      {% if p.text %}<p class="mt-8">{{ p.text }}</p>{% endif %}
+      {% if p.media_url %}
+        {% set ext = p.media_url.split('.')[-1]|lower %}
+        <div class="mt-8">
+          {% if ext in ['jpg','jpeg','png','gif','webp'] %}
+            <img src="{{ p.media_url }}" class="post-media">
+          {% elif ext in ['mp4','mov','webm'] %}
+            <video class="post-media" controls src="{{ p.media_url }}"></video>
+          {% elif ext in ['mp3','wav','ogg'] %}
+            <audio controls src="{{ p.media_url }}" style="width:100%"></audio>
+          {% endif %}
+        </div>
+      {% endif %}
+    </article>
+  {% else %}
+    <p class="muted">Пока пусто. Напиши первый пост!</p>
+  {% endfor %}
+</section>
 {% endblock %}

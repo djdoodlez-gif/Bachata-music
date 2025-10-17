@@ -1,21 +1,30 @@
 
 {% extends "base.html" %}
 {% block content %}
-<div class="grid2">
-  <form method="post" action="{{ url_for('login') }}" class="card">
-    <h2>Вход</h2>
-    <label>Логин <input name="username" required></label>
-    <label>Пароль <input name="password" type="password" required></label>
-    <button class="btn">Войти</button>
-  </form>
-
-  <form method="post" action="{{ url_for('register') }}" class="card">
-    <h2>Регистрация</h2>
-    <label>Логин <input name="username" required></label>
-    <label>E‑mail <input name="email" type="email"></label>
-    <label>Имя <input name="display_name"></label>
-    <label>Пароль <input name="password" type="password" required></label>
-    <button class="btn">Создать аккаунт</button>
-  </form>
+<div class="auth-grid">
+  <section class="card p-24">
+    <h2 class="h2">Вход</h2>
+    <form method="post" action="{{ url_for('login') }}" class="form mt-12">
+      <label>Логин</label>
+      <input type="text" name="username" autocomplete="username">
+      <label>Пароль</label>
+      <input type="password" name="password" autocomplete="current-password">
+      <button class="btn primary mt-12" type="submit">Войти</button>
+    </form>
+  </section>
+  <section class="card p-24">
+    <h2 class="h2">Регистрация</h2>
+    <form method="post" action="{{ url_for('register') }}" class="form mt-12">
+      <label>Логин</label>
+      <input type="text" name="username" required>
+      <label>E-mail</label>
+      <input type="email" name="email">
+      <label>Имя (отображается)</label>
+      <input type="text" name="display_name">
+      <label>Пароль</label>
+      <input type="password" name="password" required>
+      <button class="btn mt-12" type="submit">Создать аккаунт</button>
+    </form>
+  </section>
 </div>
 {% endblock %}

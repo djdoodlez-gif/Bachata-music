@@ -1,59 +1,31 @@
 
 {% extends "base.html" %}
 {% block content %}
-<section class="profile card">
-  <img class="avatar" src="{{ user.avatar or url_for('static', filename='avatar_placeholder.png') }}" alt="">
-  <div>
-    <h2>{{ user.display_name or user.username }}</h2>
-    <div class="muted">@{{ user.username }}</div>
-    {% if user.bio %}<p>{{ user.bio }}</p>{% endif %}
-    {% if g.user and g.user.id == user.id %}
-      <a class="btn" href="{{ url_for('settings') }}">Редактировать</a>
-    {% endif %}
-  </div>
+<section class="card p-20">
+  <h1 class="h1">Мой профиль</h1>
+  <form method="post" class="form mt-12">
+    <label>Имя</label>
+    <input type="text" name="display_name" value="{{ g.user.display_name or '' }}">
+    <label>E-mail</label>
+    <input type="email" name="email" value="{{ g.user.email or '' }}">
+    <button class="btn mt-12">Сохранить</button>
+  </form>
 </section>
 
-<h3>Истории</h3>
-<div class="stories">
-  {% for s in stories %}
-  <div class="story">
-    {% if s.media_type == 'image' %}
-      <img src="{{ s.media_path }}">
-    {% else %}
-      <video controls src="{{ s.media_path }}"></video>
-    {% endif %}
-  </div>
-  {% else %}<div class="muted">Нет активных историй</div>{% endfor %}
-</div>
-
-<h3>Музыка</h3>
-<div class="grid">
-  {% for t in tracks %}
-  <div class="card">
-    <strong>{{ t.title }}</strong>
-    <audio controls src="{{ t.path }}"></audio>
-  </div>
-  {% else %}<div class="muted">Нет треков</div>{% endfor %}
-</div>
-
-<h3>Альбомы</h3>
-<div class="grid">
-  {% for a in albums %}
-  <div class="card">
-    <a href="{{ url_for('album_detail', album_id=a.id) }}"><strong>{{ a.title }}</strong></a>
-    <div class="muted">{{ a.description }}</div>
-  </div>
-  {% else %}<div class="muted">Нет альбомов</div>{% endfor %}
-</div>
-
-<h3>Посты</h3>
-{% for p in posts %}
-  <article class="post card">
-    {% if p.media_path and p.media_type=='image' %}<img src="{{ p.media_path }}">{% endif %}
-    {% if p.media_path and p.media_type=='video' %}<video controls src="{{ p.media_path }}"></video>{% endif %}
-    {% if p.media_path and p.media_type=='audio' %}<audio controls src="{{ p.media_path }}"></audio>{% endif %}
-    {% if p.text %}<p>{{ p.text }}</p>{% endif %}
-    <time class="muted">{{ p.created_at.strftime('%d.%m %H:%M') }}</time>
-  </article>
-{% else %}<div class="muted">Постов нет</div>{% endfor %}
+<section class="mt-16 feed">
+  <h2 class="h2 mb-8">Мои записи</h2>
+  {% for p in posts %}
+    <article class="card p-16">
+      <div class="muted s">{{ p.created_at }}</div>
+      {% if p.text %}<p class="mt-8">{{ p.text }}</p>{% endif %}
+      {% if p.media_url %}
+        <div class="mt-8">
+          <img src="{{ p.media_url }}" class="post-media">
+        </div>
+      {% endif %}
+    </article>
+  {% else %}
+    <p class="muted">Нет записей.</p>
+  {% endfor %}
+</section>
 {% endblock %}

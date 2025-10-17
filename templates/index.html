@@ -1,11 +1,13 @@
 
 {% extends "base.html" %}
 {% block content %}
-<section class="hero">
-  <h1>Добро пожаловать!</h1>
-  <p>Создай аккаунт, загружай фото и музыку, делай истории — как в инсте/ВК.</p>
-  <div class="cta">
-    <a class="btn" href="{{ url_for('login') }}">Войти / Регистрация</a>
+<section class="hero auth-hero">
+  <div class="hero-inner card p-24">
+    <h1 class="h1 mb-8">Добро пожаловать!</h1>
+    <p class="muted">Зарегистрируйся — и загляни в ленту.</p>
+    <div class="mt-16">
+      <a class="btn primary" href="{{ url_for('login') }}">Войти / Регистрация</a>
+    </div>
   </div>
 </section>
 {% endblock %}
