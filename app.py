@@ -174,9 +174,6 @@ def api_tracks():
 def serve_upload(filename):
     return send_from_directory(os.path.join(BASE_DIR, "static", "uploads"), filename)
 
-def _ensure():
-    init_db()
-_ensure()
 
 # ---------- bootstrap ----------
 def _ensure_init():
